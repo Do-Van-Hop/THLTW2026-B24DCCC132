@@ -15,24 +15,24 @@
 			},
 		],
 	},
-	{
-		path: '/quan-ly-san-pham',
-		name: 'Quản lý sản phẩm',
-		icon: 'shopping',
-		component: './QuanLySanPham',
-	},
-	{
-		path: '/quan-ly-don-hang',
-		name: 'Quản lý đơn hàng',
-		icon: 'shoppingCart',
-		component: './QuanLyDonHang',
-	},
-	{
-		path: '/thong-ke',
-		name: 'Thống kê',
-		icon: 'barChart',
-		component: './ThongKe',
-	},
+	// {
+	// 	path: '/quan-ly-san-pham',
+	// 	name: 'Quản lý sản phẩm',
+	// 	icon: 'shopping',
+	// 	component: './QuanLySanPham',
+	// },
+	// {
+	// 	path: '/quan-ly-don-hang',
+	// 	name: 'Quản lý đơn hàng',
+	// 	icon: 'shoppingCart',
+	// 	component: './QuanLyDonHang',
+	// },
+	// {
+	// 	path: '/thong-ke',
+	// 	name: 'Thống kê',
+	// 	icon: 'barChart',
+	// 	component: './ThongKe',
+	// },
 
 	///////////////////////////////////
 	// DEFAULT MENU
@@ -54,11 +54,23 @@
 		component: './RandomUser',
 		icon: 'ArrowsAltOutlined',
 	},
+	// {
+	// 	path: '/todo-list',
+	// 	name: 'TodoList',
+	// 	icon: 'OrderedListOutlined',
+	// 	component: './TodoList',
+	// },
 	{
-		path: '/todo-list',
-		name: 'TodoList',
-		icon: 'OrderedListOutlined',
-		component: './TodoList',
+		path: '/doan-so',
+		name: 'Bài 1',
+		icon: 'NumberOutlined',
+		component: './DoanSo',
+	},
+	{
+		path: '/hoc-tap',
+		name: 'Bài 2',
+		icon: 'book',
+		component: './HocTap',
 	},
 
 	// DANH MUC HE THONG
