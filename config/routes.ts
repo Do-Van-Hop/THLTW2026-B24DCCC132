@@ -72,6 +72,18 @@
 		icon: 'book',
 		component: './HocTap',
 	},
+	{
+		path: '/oan-tu-ti',
+		name: 'Oẳn Tù Tì',
+		icon: 'rocket', // hoặc icon phù hợp
+		component: './OanTuTi',
+	},
+	{
+		path: '/ngan-hang-cau-hoi',
+		name: 'Ngân hàng câu hỏi',
+		icon: 'database',
+		component: './NganHangCauHoi',
+	},
 
 	// DANH MUC HE THONG
 	// {
