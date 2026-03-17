@@ -417,7 +417,7 @@ const DatLichPage: React.FC = () => {
           value={status}
           size="small"
           style={{ width: 130 }}
-          disabled={status === 'completed' || status === 'cancelled'} // Không cho thay đổi trạng thái nếu đã hoàn thành/hủy
+          disabled={status === 'completed' || status === 'cancelled'} 
           onChange={async (newStatus) => {
             const success = await updateAppointment(record.id, { status: newStatus });
             if (success) {
@@ -442,7 +442,7 @@ const DatLichPage: React.FC = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => openModal('appointment', record)}
-            disabled={record.status === 'completed' || record.status === 'cancelled'} // Vô hiệu hóa nút sửa nếu đã hoàn thành/hủy
+            disabled={record.status === 'completed' || record.status === 'cancelled'} 
           />
           <Popconfirm title="Hủy lịch hẹn?" onConfirm={() => deleteAppointment(record.id)}>
             <Button icon={<DeleteOutlined />} size="small" danger />
