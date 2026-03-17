@@ -84,6 +84,12 @@
 		icon: 'database',
 		component: './NganHangCauHoi',
 	},
+	{
+		path: '/dat-lich',
+		name: 'Đặt lịch hẹn',
+		icon: 'calendar',
+		component: './DatLich',
+	},
 
 	// DANH MUC HE THONG
 	// {
