@@ -75,7 +75,7 @@
 	{
 		path: '/oan-tu-ti',
 		name: 'Oẳn Tù Tì',
-		icon: 'rocket', // hoặc icon phù hợp
+		icon: 'rocket', 
 		component: './OanTuTi',
 	},
 	{
@@ -89,6 +89,12 @@
 		name: 'Đặt lịch hẹn',
 		icon: 'calendar',
 		component: './DatLich',
+	},
+	{
+		path: '/van-bang',
+		name: 'Quản lý văn bằng',
+		icon: 'book',
+		component: './VanBang',
 	},
 
 	// DANH MUC HE THONG
