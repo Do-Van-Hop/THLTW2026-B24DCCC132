@@ -96,6 +96,12 @@
 		icon: 'book',
 		component: './VanBang',
 	},
+	{
+		path: '/clb',
+		name: 'Câu lạc bộ',
+		icon: 'team',
+		component: './Clb',
+	},
 
 	// DANH MUC HE THONG
 	// {
