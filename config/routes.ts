@@ -102,6 +102,12 @@
 		icon: 'team',
 		component: './Clb',
 	},
+	{
+		path: '/travel-planner',
+		name: 'Lập kế hoạch du lịch',
+		icon: 'compass',
+		component: './TravelPlanner',
+	},
 
 	// DANH MUC HE THONG
 	// {
