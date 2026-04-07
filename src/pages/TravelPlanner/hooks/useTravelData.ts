@@ -1,3 +1,4 @@
+// hooks/useTravelData.ts
 import { useState, useEffect } from 'react';
 import { Destination, Itinerary, defaultDestinations } from '../types';
 
@@ -10,6 +11,7 @@ export default function useTravelData() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
 
+  // Load initial data from localStorage
   useEffect(() => {
     const storedDests = localStorage.getItem(STORAGE_KEYS.destinations);
     if (storedDests) {
@@ -25,10 +27,12 @@ export default function useTravelData() {
     }
   }, []);
 
+  // Persist destinations whenever they change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.destinations, JSON.stringify(destinations));
   }, [destinations]);
 
+  // Persist itineraries whenever they change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.itineraries, JSON.stringify(itineraries));
   }, [itineraries]);
@@ -59,6 +63,12 @@ export default function useTravelData() {
     setItineraries(itineraries.filter(i => i.id !== id));
   };
 
+  // Reset destinations to default values (from types.ts)
+  const resetDestinations = () => {
+    setDestinations(defaultDestinations);
+    // localStorage will be updated automatically via the useEffect above
+  };
+
   return {
     destinations,
     itineraries,
@@ -68,5 +78,6 @@ export default function useTravelData() {
     addItinerary,
     updateItinerary,
     deleteItinerary,
+    resetDestinations, // ← hàm mới
   };
 }

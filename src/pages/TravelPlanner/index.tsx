@@ -6,7 +6,8 @@ import {
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UploadOutlined,
-  WarningOutlined, DollarOutlined, CalendarOutlined, EnvironmentOutlined
+  WarningOutlined, DollarOutlined, CalendarOutlined, EnvironmentOutlined,
+  ArrowUpOutlined, ArrowDownOutlined
 } from '@ant-design/icons';
 import useTravelData from './hooks/useTravelData';
 import DestinationCard from './components/DestinationCard';
@@ -21,7 +22,17 @@ const { RangePicker } = DatePicker;
 const { Panel } = Collapse;
 
 const TravelPlanner: React.FC = () => {
-  const { destinations, itineraries, addDestination, updateDestination, deleteDestination, addItinerary, updateItinerary, deleteItinerary } = useTravelData();
+  const { 
+    destinations, 
+    itineraries, 
+    addDestination, 
+    updateDestination, 
+    deleteDestination, 
+    addItinerary, 
+    updateItinerary, 
+    deleteItinerary,
+    resetDestinations 
+  } = useTravelData();
 
   const [destModalVisible, setDestModalVisible] = useState(false);
   const [editingDest, setEditingDest] = useState<Destination | null>(null);
@@ -41,14 +52,38 @@ const TravelPlanner: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [minRating, setMinRating] = useState(0);
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend'>('ascend');
 
-  const filteredDestinations = destinations.filter(d => {
-    const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.location.toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === 'all' || d.type === typeFilter;
-    const matchPrice = d.price >= priceRange[0] && d.price <= priceRange[1];
-    const matchRating = d.rating >= minRating;
-    return matchSearch && matchType && matchPrice && matchRating;
-  });
+  const filteredDestinations = useMemo(() => {
+    const filtered = destinations.filter(d => {
+      const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.location.toLowerCase().includes(search.toLowerCase());
+      const matchType = typeFilter === 'all' || d.type === typeFilter;
+      const matchPrice = d.price >= priceRange[0] && d.price <= priceRange[1];
+      const matchRating = d.rating >= minRating;
+      return matchSearch && matchType && matchPrice && matchRating;
+    });
+
+    filtered.sort((a, b) => {
+      let compareA: any, compareB: any;
+      if (sortBy === 'name') {
+        compareA = a.name.toLowerCase();
+        compareB = b.name.toLowerCase();
+      } else if (sortBy === 'price') {
+        compareA = a.price;
+        compareB = b.price;
+      } else {
+        compareA = a.rating;
+        compareB = b.rating;
+      }
+      if (sortOrder === 'ascend') {
+        return compareA > compareB ? 1 : -1;
+      } else {
+        return compareA < compareB ? 1 : -1;
+      }
+    });
+    return filtered;
+  }, [destinations, search, typeFilter, priceRange, minRating, sortBy, sortOrder]);
 
   const calculateTotals = (dests: Destination[]) => {
     return dests.reduce(
@@ -159,9 +194,22 @@ const TravelPlanner: React.FC = () => {
     setDays(days.map(day => day.id === dayId ? { ...day, destinations: day.destinations.filter(d => d.id !== destId) } : day));
   };
 
+  const moveDestination = (dayId: string, destIndex: number, direction: 'up' | 'down') => {
+    setDays(prevDays => prevDays.map(day => {
+      if (day.id !== dayId) return day;
+      const newDests = [...day.destinations];
+      if (direction === 'up' && destIndex > 0) {
+        [newDests[destIndex], newDests[destIndex - 1]] = [newDests[destIndex - 1], newDests[destIndex]];
+      } else if (direction === 'down' && destIndex < newDests.length - 1) {
+        [newDests[destIndex], newDests[destIndex + 1]] = [newDests[destIndex + 1], newDests[destIndex]];
+      }
+      return { ...day, destinations: newDests };
+    }));
+  };
+
   const getTravelTime = (day: TripDay) => {
     if (day.destinations.length <= 1) return 0;
-    return (day.destinations.length - 1) * 0.5; // giờ
+    return (day.destinations.length - 1) * 0.5;
   };
 
   const adminStats = useMemo(() => {
@@ -251,13 +299,28 @@ const TravelPlanner: React.FC = () => {
                 <Col xs={24} sm={5}><Rate value={minRating} onChange={setMinRating} /></Col>
                 <Col xs={24} sm={5}><Slider range min={0} max={1000000} step={50000} value={priceRange} onChange={(v) => setPriceRange(v as [number, number])} /></Col>
               </Row>
-                <Row gutter={[16, 16]}>
+              <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+                <Col xs={12} sm={6}>
+                  <Select value={sortBy} onChange={setSortBy} style={{ width: '100%' }} placeholder="Sắp xếp theo">
+                    <Option value="name">Tên</Option>
+                    <Option value="price">Giá</Option>
+                    <Option value="rating">Đánh giá</Option>
+                  </Select>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Select value={sortOrder} onChange={setSortOrder} style={{ width: '100%' }}>
+                    <Option value="ascend">Tăng dần</Option>
+                    <Option value="descend">Giảm dần</Option>
+                  </Select>
+                </Col>
+              </Row>
+              <Row gutter={[16, 16]}>
                 {filteredDestinations.map(dest => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={dest.id} style={{ display: 'flex' }}>
+                  <Col xs={24} sm={12} md={8} lg={6} key={dest.id} style={{ display: 'flex' }}>
                     <DestinationCard destination={dest} />
-                    </Col>
+                  </Col>
                 ))}
-                </Row>
+              </Row>
             </Card>
           </TabPane>
 
@@ -279,7 +342,19 @@ const TravelPlanner: React.FC = () => {
           </TabPane>
 
           <TabPane tab="Quản trị" key="4">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingDest(null); destForm.resetFields(); setImageFileList([]); setDestModalVisible(true); }}>Thêm điểm đến</Button>
+            <Space style={{ marginBottom: 16 }}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingDest(null); destForm.resetFields(); setImageFileList([]); setDestModalVisible(true); }}>Thêm điểm đến</Button>
+              <Button type="default" danger icon={<DeleteOutlined />} onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận khôi phục',
+                  content: 'Tất cả điểm đến sẽ được đặt lại về mặc định. Dữ liệu lịch trình không bị ảnh hưởng. Tiếp tục?',
+                  onOk: () => {
+                    resetDestinations();
+                    message.success('Đã khôi phục danh sách điểm đến mặc định');
+                  }
+                });
+              }}>Khôi phục mặc định</Button>
+            </Space>
             <Table dataSource={destinations} columns={destColumns} rowKey="id" style={{ marginTop: 16 }} pagination={{ pageSize: 5 }} />
             
             <Title level={4} style={{ marginTop: 24 }}>Thống kê nâng cao</Title>
@@ -367,10 +442,14 @@ const TravelPlanner: React.FC = () => {
           <div><Button type="dashed" onClick={addDay} icon={<PlusOutlined />}>Thêm ngày</Button></div>
           {days.map((day, idx) => (
             <Card key={day.id} title={`Ngày ${day.day}`} style={{ marginTop: 16 }} extra={<Text type="secondary">Di chuyển: {getTravelTime(day)} giờ</Text>}>
-              {day.destinations.map(dest => (
+              {day.destinations.map((dest, destIndex) => (
                 <div key={dest.id} style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span><EnvironmentOutlined /> {dest.name} - {dest.price.toLocaleString()} VND</span>
-                  <Button size="small" danger onClick={() => removeDestinationFromDay(day.id, dest.id)}>Xóa</Button>
+                  <Space>
+                    <Button size="small" icon={<ArrowUpOutlined />} onClick={() => moveDestination(day.id, destIndex, 'up')} disabled={destIndex === 0} />
+                    <Button size="small" icon={<ArrowDownOutlined />} onClick={() => moveDestination(day.id, destIndex, 'down')} disabled={destIndex === day.destinations.length - 1} />
+                    <Button size="small" danger onClick={() => removeDestinationFromDay(day.id, dest.id)}>Xóa</Button>
+                  </Space>
                 </div>
               ))}
               <Select
@@ -389,97 +468,97 @@ const TravelPlanner: React.FC = () => {
         </Form>
       </Modal>
 
-    <Modal
-    title="Chi tiết ngân sách"
-    visible={budgetDetailVisible}
-    onCancel={() => setBudgetDetailVisible(false)}
-    footer={null}
-    width={800}
-    style={{ top: 20 }}
-    bodyStyle={{ overflowX: 'auto', maxHeight: '70vh', padding: '16px' }}
-    >
-    {selectedItinerary && (
-        <div style={{ minWidth: 280 }}>
-        <Title level={4}>{selectedItinerary.name}</Title>
-        <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12}>
-            <Statistic title="Tổng chi thực tế" value={selectedItinerary.totalBudget} suffix="VND" groupSeparator="." />
-            </Col>
-            <Col xs={24} sm={12}>
-            <InputNumber
-                addonBefore="Ngân sách dự kiến"
-                value={expectedBudget}
-                onChange={(val) => setExpectedBudget(val || 0)}
-                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                style={{ width: '100%' }}
-            />
-            </Col>
-        </Row>
-        {expectedBudget > 0 && selectedItinerary.totalBudget > expectedBudget && (
-            <Alert
-            message="Cảnh báo vượt ngân sách!"
-            description={`Bạn đã chi vượt ${(selectedItinerary.totalBudget - expectedBudget).toLocaleString()} VND so với dự kiến.`}
-            type="warning"
-            showIcon
-            icon={<WarningOutlined />}
-            style={{ margin: '16px 0' }}
-            />
-        )}
-        {(() => {
-            const breakdown = getBudgetBreakdown(selectedItinerary);
-            const total = breakdown.total;
-            if (total === 0) return <Text>Chưa có dữ liệu chi tiết.</Text>;
-            return (
-            <div style={{ marginTop: 16 }}>
-                <Title level={5}>Phân bổ chi phí</Title>
-                <div style={{ marginBottom: 8 }}>
-                <Progress
-                    percent={parseFloat(((breakdown.visit / total) * 100).toFixed(1))}
-                    format={(percent) => `Tham quan: ${percent}%`}
+      <Modal
+        title="Chi tiết ngân sách"
+        visible={budgetDetailVisible}
+        onCancel={() => setBudgetDetailVisible(false)}
+        footer={null}
+        width={800}
+        style={{ top: 20 }}
+        bodyStyle={{ overflowX: 'auto', maxHeight: '70vh', padding: '16px' }}
+      >
+        {selectedItinerary && (
+          <div style={{ minWidth: 280 }}>
+            <Title level={4}>{selectedItinerary.name}</Title>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12}>
+                <Statistic title="Tổng chi thực tế" value={selectedItinerary.totalBudget} suffix="VND" groupSeparator="." />
+              </Col>
+              <Col xs={24} sm={12}>
+                <InputNumber
+                  addonBefore="Ngân sách dự kiến"
+                  value={expectedBudget}
+                  onChange={(val) => setExpectedBudget(val || 0)}
+                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  style={{ width: '100%' }}
                 />
-                <Text type="secondary">{breakdown.visit.toLocaleString()} VND</Text>
+              </Col>
+            </Row>
+            {expectedBudget > 0 && selectedItinerary.totalBudget > expectedBudget && (
+              <Alert
+                message="Cảnh báo vượt ngân sách!"
+                description={`Bạn đã chi vượt ${(selectedItinerary.totalBudget - expectedBudget).toLocaleString()} VND so với dự kiến.`}
+                type="warning"
+                showIcon
+                icon={<WarningOutlined />}
+                style={{ margin: '16px 0' }}
+              />
+            )}
+            {(() => {
+              const breakdown = getBudgetBreakdown(selectedItinerary);
+              const total = breakdown.total;
+              if (total === 0) return <Text>Chưa có dữ liệu chi tiết.</Text>;
+              return (
+                <div style={{ marginTop: 16 }}>
+                  <Title level={5}>Phân bổ chi phí</Title>
+                  <div style={{ marginBottom: 8 }}>
+                    <Progress
+                      percent={parseFloat(((breakdown.visit / total) * 100).toFixed(1))}
+                      format={(percent) => `Tham quan: ${percent}%`}
+                    />
+                    <Text type="secondary">{breakdown.visit.toLocaleString()} VND</Text>
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <Progress
+                      percent={parseFloat(((breakdown.food / total) * 100).toFixed(1))}
+                      format={(percent) => `Ăn uống: ${percent}%`}
+                    />
+                    <Text type="secondary">{breakdown.food.toLocaleString()} VND</Text>
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <Progress
+                      percent={parseFloat(((breakdown.accommodation / total) * 100).toFixed(1))}
+                      format={(percent) => `Lưu trú: ${percent}%`}
+                    />
+                    <Text type="secondary">{breakdown.accommodation.toLocaleString()} VND</Text>
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <Progress
+                      percent={parseFloat(((breakdown.transport / total) * 100).toFixed(1))}
+                      format={(percent) => `Di chuyển: ${percent}%`}
+                    />
+                    <Text type="secondary">{breakdown.transport.toLocaleString()} VND</Text>
+                  </div>
                 </div>
-                <div style={{ marginBottom: 8 }}>
-                <Progress
-                    percent={parseFloat(((breakdown.food / total) * 100).toFixed(1))}
-                    format={(percent) => `Ăn uống: ${percent}%`}
-                />
-                <Text type="secondary">{breakdown.food.toLocaleString()} VND</Text>
-                </div>
-                <div style={{ marginBottom: 8 }}>
-                <Progress
-                    percent={parseFloat(((breakdown.accommodation / total) * 100).toFixed(1))}
-                    format={(percent) => `Lưu trú: ${percent}%`}
-                />
-                <Text type="secondary">{breakdown.accommodation.toLocaleString()} VND</Text>
-                </div>
-                <div style={{ marginBottom: 8 }}>
-                <Progress
-                    percent={parseFloat(((breakdown.transport / total) * 100).toFixed(1))}
-                    format={(percent) => `Di chuyển: ${percent}%`}
-                />
-                <Text type="secondary">{breakdown.transport.toLocaleString()} VND</Text>
-                </div>
-            </div>
-            );
-        })()}
-        <Collapse style={{ marginTop: 16 }} ghost>
-            <Panel header="Xem chi tiết theo ngày" key="1">
-            {selectedItinerary.days.map(day => (
-                <Card key={day.id} title={`Ngày ${day.day}`} size="small" style={{ marginTop: 8 }}>
-                {day.destinations.map(dest => (
-                    <div key={dest.id} style={{ marginBottom: 4, wordBreak: 'break-word' }}>
-                    <Text strong>{dest.name}</Text>: Ăn uống {dest.foodCost.toLocaleString()} | Lưu trú {dest.accommodationCost.toLocaleString()} | Di chuyển {dest.transportCost.toLocaleString()} | Tham quan {dest.price.toLocaleString()}
-                    </div>
+              );
+            })()}
+            <Collapse style={{ marginTop: 16 }} ghost>
+              <Panel header="Xem chi tiết theo ngày" key="1">
+                {selectedItinerary.days.map(day => (
+                  <Card key={day.id} title={`Ngày ${day.day}`} size="small" style={{ marginTop: 8 }}>
+                    {day.destinations.map(dest => (
+                      <div key={dest.id} style={{ marginBottom: 4, wordBreak: 'break-word' }}>
+                        <Text strong>{dest.name}</Text>: Ăn uống {dest.foodCost.toLocaleString()} | Lưu trú {dest.accommodationCost.toLocaleString()} | Di chuyển {dest.transportCost.toLocaleString()} | Tham quan {dest.price.toLocaleString()}
+                      </div>
+                    ))}
+                    <Text type="secondary">Tổng ngày: {calculateTotals(day.destinations).total.toLocaleString()} VND</Text>
+                  </Card>
                 ))}
-                <Text type="secondary">Tổng ngày: {calculateTotals(day.destinations).total.toLocaleString()} VND</Text>
-                </Card>
-            ))}
-            </Panel>
-        </Collapse>
-        </div>
-    )}
-    </Modal>
+              </Panel>
+            </Collapse>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
