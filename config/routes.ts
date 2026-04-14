@@ -108,7 +108,12 @@
 		icon: 'compass',
 		component: './TravelPlanner',
 	},
-
+	{
+		path: '/course-management',
+		name: 'Quản lý khóa học',
+		icon: 'book',
+		component: './CourseManagement',
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
