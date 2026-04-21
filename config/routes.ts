@@ -114,6 +114,18 @@
 		icon: 'book',
 		component: './CourseManagement',
 	},
+	{
+		path: '/blog',
+		name: 'Blog',
+		icon: 'read',
+		routes: [
+			{ path: '/blog', redirect: '/blog/home' },
+			{ path: '/blog/home', name: 'Trang chủ', component: './Blog/index' },
+			{ path: '/blog/post/:slug', component: './Blog/PostDetail' },
+			{ path: '/blog/about', name: 'Giới thiệu', component: './Blog/About' },
+			{ path: '/blog/admin', name: 'Quản trị', component: './Blog/Admin' },
+		],
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
