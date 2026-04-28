@@ -126,6 +126,15 @@
 			{ path: '/blog/admin', name: 'Quản trị', component: './Blog/Admin' },
 		],
 	},
+		{
+		path: '/FitnessApp',
+		name: 'Fitness App',
+		icon: 'read',
+		routes: [
+			{ path: '/FitnessApp', redirect: '/FitnessApp/home' },
+			{ path: '/FitnessApp/home', name: 'Trang chủ', component: './FitnessApp/index' },	
+		],
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
