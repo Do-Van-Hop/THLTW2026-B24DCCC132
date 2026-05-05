@@ -135,6 +135,12 @@
 			{ path: '/FitnessApp/home', name: 'Trang chủ', component: './FitnessApp/index' },	
 		],
 	},
+	{
+		path: '/task-manager',
+		name: 'Quản lý công việc',
+		icon: 'checkSquare',
+		component: './TaskManager/Main',
+	},
 	// DANH MUC HE THONG
 	// {
 	// 	name: 'DanhMuc',
